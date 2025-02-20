@@ -1,32 +1,59 @@
-const uint8_t pins[] = {3, 5, 6, 9, 10};  // Пины
-const unsigned long periods[] = {10000, 1000, 500, 100, 50};  // Периоды в мкс
+unsigned long time;
+int ledPin = 9;      
+  
+int val = 0;     
 
-unsigned long previousMicros[5] = {0};  // Последнее переключение каждого пина
-uint8_t pinStates = 0b00000000;  // Состояние пинов (битовая маска)
+int pin3flag = 0;
+int pin5flag = 0;
+int pin6flag = 0;
+int pin9flag = 0;
+int pin10flag = 0;
 
-volatile uint8_t *ports[] = {&PORTD, &PORTD, &PORTD, &PORTB, &PORTB};
-const uint8_t bitMasks[] = {1 << 3, 1 << 5, 1 << 6, 1 << 1, 1 << 2};
+const unsigned long periods[] = {10000, 1000, 500, 100, 50};
 
-void setup() {
-  for (int i = 0; i < 5; i++) {
-    pinMode(pins[i], OUTPUT);
-  }
-}
+// Последнее время обновления состояния для каждого пина
+unsigned long previousMillis3 = 0;        
+unsigned long previousMillis5 = 0;       
+unsigned long previousMillis6 = 0;      
+unsigned long previousMillis9 = 0;    
+unsigned long previousMillis10 = 0; 
 
-void loop() {
-  unsigned long currentMicros = micros();
 
-  for (int i = 0; i < 5; i++) {
-    if (currentMicros - previousMicros[i] >= periods[i]) {
-      previousMicros[i] = currentMicros;
-      pinStates ^= (1 << i);  // Инвертируем бит состояния
-
-      // Прямая запись в порт
-      if (pinStates & (1 << i)) {
-        *ports[i] |= bitMasks[i];  // Установить бит (HIGH)
-      } else {
-        *ports[i] &= ~bitMasks[i];  // Сбросить бит (LOW)
-      }
+    void setup() {
+      pinMode(3, OUTPUT);
+      pinMode(5, OUTPUT);
+      pinMode(6, OUTPUT);
+      pinMode(9, OUTPUT); 
+      pinMode(10, OUTPUT); 
     }
-  }
-}
+
+    void loop() {
+
+      time = micros();
+        // Обновляем каждый пин в соответствии с его временем
+
+        if (time - previousMillis3 >= periods[0]){
+        PORTD ^= B00001000;
+        previousMillis3 = time;
+        }
+
+        if (time - previousMillis5 >= periods[1]){
+        PORTD ^= B00100000;
+        previousMillis5 = time;
+        }
+
+        if (time - previousMillis6 >= periods[2]){
+        PORTD ^= B01000000;
+        previousMillis6 = time;
+        }
+
+        if (time - previousMillis9 >= periods[3]){
+        PORTB ^= B00000010;
+        previousMillis9 = time;
+        }
+        
+        if (time - previousMillis10 >= periods[4] ){
+        PORTB ^= B00000100;
+        previousMillis10 = time;
+        }
+    }
